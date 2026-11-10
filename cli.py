@@ -8,13 +8,14 @@ import json
 from typing import Any, Dict
 
 from contract import BaseContract
+from pydantic import ValidationError
 
 
 def load_contract_class(name: str):
     """Dynamically load a contract class by name from the contract module."""
     module = importlib.import_module("contract")
     cls = getattr(module, name, None)
-    if cls is None or not issubclass(cls, BaseContract):
+    if not isinstance(cls, type) or not issubclass(cls, BaseContract) or not hasattr(cls, "model"):
         raise click.BadParameter(
             f"Contract class '{name}' not found or not a subclass of BaseContract"
         )
@@ -37,8 +38,8 @@ def validate(contract_name: str, file_path: str) -> None:
     try:
         contract_cls.validate_data(data)
         click.echo("Validation succeeded")
-    except Exception as exc:  # noqa: BLE001
-        click.echo(f"Validation failed: {exc}")
+    except ValidationError as exc:
+        raise click.ClickException(f"Validation failed: {exc}") from exc
 
 
 @cli.command(help="Compare two JSON files for drift against a contract")
