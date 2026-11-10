@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Tuple, Type
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field
 
 
 class BaseContract:
@@ -37,6 +37,16 @@ class BaseContract:
         for key in keys:
             v1 = data1.get(key)
             v2 = data2.get(key)
-            if type(v1) != type(v2):  # type: ignore[unreachable]
+            if key not in data1 or key not in data2 or type(v1) != type(v2):
                 diffs[key] = (v1, v2)
         return diffs
+
+class SampleRecord(BaseModel):
+    id: int = Field(gt=0)
+    name: str = Field(min_length=1)
+
+
+class SampleContract(BaseContract):
+    """Small contract used by the documented CLI example."""
+
+    model = SampleRecord
