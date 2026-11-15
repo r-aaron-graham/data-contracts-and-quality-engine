@@ -33,3 +33,16 @@ python -m pytest -q
 
 Create additional contracts by subclassing `BaseContract` and assigning a
 Pydantic model to `model`.
+
+## Deployment verification
+
+Use Python 3.12 on Linux. CI and Docker apply the checked-in dependency constraints.
+
+```sh
+python -m pip install -c requirements.lock -r requirements-dev.txt
+python -m pytest -q
+docker build -t reviewer-smoke .
+docker run --rm reviewer-smoke
+```
+
+Expected result: `Validation succeeded` for the bundled valid record. The container checks the included example contract.
